@@ -10,6 +10,7 @@ class AgendaActionType(str, Enum):
     DEADLINE = "deadline"
     RESCHEDULE_REQUEST = "reschedule_request"
     AVAILABILITY_REQUEST = "availability_request"
+    PERSONAL_WORK = "personal_work"
     AMBIGUOUS = "ambiguous"
 
 
@@ -28,7 +29,11 @@ class EmailAgendaAnalysis(BaseModel):
     requested_period: Optional[str] = None
     requested_date: Optional[str] = None
     requested_time: Optional[str] = None
+    requested_timezone: Optional[str] = None
+    local_time_equivalent: Optional[str] = None
     duration_minutes: Optional[int] = None
+    estimated_effort_minutes: Optional[int] = None
+    is_personal_work: bool = False
     urgency: Urgency = Urgency.NORMAL
     ambiguities: list[str] = Field(default_factory=list)
     recommended_next_step: str
@@ -48,4 +53,3 @@ class EmailProcessingResult(BaseModel):
     received_datetime: str
     analysis: EmailAgendaAnalysis
     suggested_slots: list[SuggestedSlot] = Field(default_factory=list)
-

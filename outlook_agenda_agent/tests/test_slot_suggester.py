@@ -90,8 +90,10 @@ class SlotSuggesterTests(unittest.TestCase):
             max_suggestions=10,
         )
 
-        self.assertEqual(len(slots), 2)
-        self.assertTrue(all("09:" in slot.start for slot in slots))
+        self.assertEqual(len(slots), 3)
+        self.assertIn("08:30:00", slots[0].start)
+        self.assertIn("09:00:00", slots[1].start)
+        self.assertIn("09:30:00", slots[2].start)
 
     def test_duration_none_uses_default_duration(self):
         schedule = {"value": [{"availabilityView": "0111111111111111"}]}
@@ -107,6 +109,23 @@ class SlotSuggesterTests(unittest.TestCase):
         self.assertEqual(len(slots), 1)
         self.assertIn("09:00:00", slots[0].start)
         self.assertIn("09:30:00", slots[0].end)
+
+    def test_personal_work_is_limited_to_two_hour_blocks(self):
+        schedule = {"value": [{"availabilityView": "000000000000000000"}]}
+
+        slots = suggest_slots_from_schedule(
+            schedule,
+            240,
+            "2026-04-27T08:30:00",
+            "2026-04-27T17:30:00",
+            timezone="America/Montreal",
+            is_personal_work=True,
+            max_personal_block_minutes=120,
+        )
+
+        self.assertEqual(len(slots), 3)
+        self.assertIn("08:30:00", slots[0].start)
+        self.assertIn("10:30:00", slots[0].end)
 
 
 if __name__ == "__main__":

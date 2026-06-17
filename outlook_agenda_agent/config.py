@@ -12,9 +12,12 @@ class ConfigError(RuntimeError):
     pass
 
 
-WORK_START_HOUR = 9
+WORK_START_HOUR = 8
+WORK_START_MINUTE = 30
 WORK_END_HOUR = 17
+WORK_END_MINUTE = 30
 DEFAULT_MEETING_DURATION_MINUTES = 30
+PERSONAL_WORK_MAX_BLOCK_MINUTES = 120
 MAX_SLOT_SUGGESTIONS = 3
 
 
@@ -35,8 +38,11 @@ class AppConfig:
     enable_draft_creation: bool
     graph_scopes: list[str]
     work_start_hour: int = WORK_START_HOUR
+    work_start_minute: int = WORK_START_MINUTE
     work_end_hour: int = WORK_END_HOUR
+    work_end_minute: int = WORK_END_MINUTE
     default_meeting_duration_minutes: int = DEFAULT_MEETING_DURATION_MINUTES
+    personal_work_max_block_minutes: int = PERSONAL_WORK_MAX_BLOCK_MINUTES
     max_slot_suggestions: int = MAX_SLOT_SUGGESTIONS
 
 
@@ -47,6 +53,16 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return raw_value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def _env_int(name: str, default: int) -> int:
+    raw_value = os.getenv(name)
+    if raw_value is None or not raw_value.strip():
+        return default
+    try:
+        return int(raw_value)
+    except ValueError as exc:
+        raise ConfigError(f"{name} doit etre un entier.") from exc
+
+
 def load_config() -> AppConfig:
     load_dotenv()
 
@@ -55,6 +71,10 @@ def load_config() -> AppConfig:
     openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
     timezone = os.getenv("TIMEZONE", "America/Montreal").strip() or "America/Montreal"
     enable_draft_creation = _env_bool("ENABLE_DRAFT_CREATION", False)
+    personal_work_max_block_minutes = _env_int(
+        "PERSONAL_WORK_MAX_BLOCK_MINUTES",
+        PERSONAL_WORK_MAX_BLOCK_MINUTES,
+    )
 
     missing = []
     if not tenant_id:
@@ -82,4 +102,5 @@ def load_config() -> AppConfig:
         timezone=timezone,
         enable_draft_creation=enable_draft_creation,
         graph_scopes=scopes,
+        personal_work_max_block_minutes=personal_work_max_block_minutes,
     )

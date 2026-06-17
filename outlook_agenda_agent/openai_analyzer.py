@@ -38,7 +38,17 @@ Analyse ce courriel Outlook.
 
 Contraintes:
 - Ne pas inventer de date, heure ou periode si elles ne sont pas explicites.
-- Utiliser duration_minutes=30 seulement si le message implique clairement une rencontre.
+- Estimer le temps necessaire pour chaque tache d'agenda ou de travail personnel.
+- Utiliser duration_minutes=30 seulement si le message implique clairement une rencontre
+  et ne donne pas de duree explicite.
+- Pour du travail personnel, renseigner is_personal_work=true et estimated_effort_minutes.
+- Ne pas proposer de bloc de travail personnel de plus de 120 minutes; si la tache semble
+  plus longue, le dire dans recommended_next_step avec une validation humaine.
+- Si le courriel vient de France metropolitaine ou mentionne la France, utiliser
+  requested_timezone="Europe/Paris" pour les heures demandees.
+- Si le courriel vient de l'ile de la Reunion ou mentionne La Reunion, utiliser
+  requested_timezone="Indian/Reunion" pour les heures demandees.
+- Quand un fuseau source est detecte, indiquer local_time_equivalent si possible.
 - Renseigner les ambiguities lorsque l'information est incomplete.
 - recommended_next_step doit toujours demander une validation humaine.
 - Ne jamais recommander d'envoi automatique ni de modification automatique du calendrier.
@@ -66,4 +76,3 @@ Corps:
         if not isinstance(parsed, EmailAgendaAnalysis):
             raise EmailAgendaAnalyzerError("Réponse OpenAI invalide: structure Pydantic absente.")
         return parsed
-

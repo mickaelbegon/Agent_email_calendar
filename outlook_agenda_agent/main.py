@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from html import unescape
 from zoneinfo import ZoneInfo
 
@@ -38,12 +38,33 @@ def _next_ten_business_day_range(timezone: str) -> tuple[str, str]:
     return start.isoformat(), end.isoformat()
 
 
+def _local_time_equivalent(analysis, local_timezone: str) -> str | None:
+    if not analysis.requested_timezone or not analysis.requested_date or not analysis.requested_time:
+        return analysis.local_time_equivalent
+
+    try:
+        requested_time = time.fromisoformat(analysis.requested_time)
+        requested_datetime = datetime.fromisoformat(analysis.requested_date).replace(
+            hour=requested_time.hour,
+            minute=requested_time.minute,
+            second=requested_time.second,
+            microsecond=0,
+            tzinfo=ZoneInfo(analysis.requested_timezone),
+        )
+    except (ValueError, TypeError):
+        return analysis.local_time_equivalent
+
+    local_datetime = requested_datetime.astimezone(ZoneInfo(local_timezone))
+    return local_datetime.strftime("%Y-%m-%d %H:%M %Z")
+
+
 def _print_result(
     *,
     subject: str,
     sender: str,
     analysis,
     suggested_slots,
+    local_timezone: str,
 ) -> None:
     print("\n" + "=" * 80)
     print(f"Sujet       : {subject or '(sans sujet)'}")
@@ -52,6 +73,13 @@ def _print_result(
     print(f"Action      : {analysis.action_type.value}")
     duration_label = f"{analysis.duration_minutes} min" if analysis.duration_minutes else "non precisee"
     print(f"Duree       : {duration_label}")
+    if analysis.estimated_effort_minutes:
+        print(f"Effort      : {analysis.estimated_effort_minutes} min")
+    if analysis.requested_timezone:
+        print(f"Fuseau source: {analysis.requested_timezone}")
+    local_time = _local_time_equivalent(analysis, local_timezone)
+    if local_time:
+        print(f"Heure locale: {local_time}")
     print(f"Confiance   : {analysis.confidence:.2f}")
     print(f"Ambiguites  : {', '.join(analysis.ambiguities) if analysis.ambiguities else 'aucune'}")
     print(f"Validation  : {analysis.recommended_next_step}")
@@ -121,12 +149,14 @@ def main() -> int:
                 )
                 suggested_slots = suggest_slots_from_schedule(
                     schedule,
-                    analysis.duration_minutes,
+                    analysis.duration_minutes or analysis.estimated_effort_minutes,
                     range_start,
                     range_end,
                     interval_minutes=30,
                     timezone=config.timezone,
                     max_suggestions=config.max_slot_suggestions,
+                    is_personal_work=analysis.is_personal_work,
+                    max_personal_block_minutes=config.personal_work_max_block_minutes,
                 )
             except GraphClientError as exc:
                 print(f"Erreur Graph pendant la lecture du calendrier: {exc}")
@@ -136,6 +166,7 @@ def main() -> int:
             sender=sender,
             analysis=analysis,
             suggested_slots=suggested_slots,
+            local_timezone=config.timezone,
         )
 
         if config.enable_draft_creation and suggested_slots:

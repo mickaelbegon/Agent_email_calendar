@@ -5,8 +5,11 @@ from zoneinfo import ZoneInfo
 from config import (
     DEFAULT_MEETING_DURATION_MINUTES,
     MAX_SLOT_SUGGESTIONS,
+    PERSONAL_WORK_MAX_BLOCK_MINUTES,
     WORK_END_HOUR,
+    WORK_END_MINUTE,
     WORK_START_HOUR,
+    WORK_START_MINUTE,
 )
 from models import SuggestedSlot
 
@@ -25,13 +28,13 @@ def _is_working_time(start: datetime, end: datetime) -> bool:
 
     work_start = start.replace(
         hour=WORK_START_HOUR,
-        minute=0,
+        minute=WORK_START_MINUTE,
         second=0,
         microsecond=0,
     )
     work_end = start.replace(
         hour=WORK_END_HOUR,
-        minute=0,
+        minute=WORK_END_MINUTE,
         second=0,
         microsecond=0,
     )
@@ -66,8 +69,12 @@ def suggest_slots_from_schedule(
     interval_minutes: int = 30,
     timezone: str = "America/Montreal",
     max_suggestions: int = MAX_SLOT_SUGGESTIONS,
+    is_personal_work: bool = False,
+    max_personal_block_minutes: int = PERSONAL_WORK_MAX_BLOCK_MINUTES,
 ) -> list[SuggestedSlot]:
     duration = duration_minutes or DEFAULT_MEETING_DURATION_MINUTES
+    if is_personal_work:
+        duration = min(duration, max_personal_block_minutes)
     required_blocks = max(1, (duration + interval_minutes - 1) // interval_minutes)
     range_start_dt = _parse_graph_datetime(range_start, timezone)
     range_end_dt = _parse_graph_datetime(range_end, timezone)
@@ -101,4 +108,3 @@ def suggest_slots_from_schedule(
             break
 
     return suggestions
-
