@@ -5,7 +5,7 @@ import streamlit as st
 
 from config import load_config
 from email_parser import ParsedEmail, parse_csv, parse_email_file
-from outlook_applescript import OutlookAppleScriptError, fetch_recent_emails
+from outlook_local import OutlookLocalError, fetch_recent_emails
 from processor import process_emails
 
 
@@ -64,8 +64,8 @@ def main() -> None:
         st.header("Parametres")
         source = st.radio(
             "Source",
-            ["Fichiers importes", "Outlook AppleScript"],
-            help="Outlook peut retourner 0 message selon la version macOS. Les fichiers sont le chemin le plus fiable.",
+            ["Fichiers importes", "Outlook local"],
+            help="Outlook local utilise AppleScript sur macOS et COM sur Windows. Les fichiers restent le chemin le plus fiable.",
         )
         max_emails = st.number_input("Nombre max de courriels", min_value=1, max_value=50, value=config.max_emails)
         timezone = st.text_input("Fuseau horaire", value=config.timezone)
@@ -116,13 +116,13 @@ def main() -> None:
                 emails = fetch_recent_emails(limit=int(max_emails))
                 st.session_state.loaded_emails = emails
                 if not emails:
-                    st.info("Outlook AppleScript n'a retourne aucun courriel.")
-            except OutlookAppleScriptError as exc:
-                st.error(f"Outlook AppleScript indisponible: {exc}")
+                    st.info("Outlook local n'a retourne aucun courriel.")
+            except OutlookLocalError as exc:
+                st.error(f"Outlook local indisponible: {exc}")
 
     emails = list(st.session_state.loaded_emails)
     if not emails:
-        st.info("Importe des fichiers ou essaie Outlook AppleScript pour commencer.")
+        st.info("Importe des fichiers ou essaie Outlook local pour commencer.")
         return
 
     st.subheader("Courriels charges")

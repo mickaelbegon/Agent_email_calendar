@@ -2,3 +2,4 @@ python-dotenv
 openai
 extract-msg
 streamlit
+pywin32; platform_system == "Windows"

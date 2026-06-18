@@ -1,8 +1,9 @@
 import argparse
+from pathlib import Path
 
 from config import ConfigError, load_config
 from email_parser import ParsedEmail, load_email_files
-from outlook_applescript import OutlookAppleScriptError, fetch_recent_emails
+from outlook_local import OutlookLocalError, fetch_recent_emails
 from processor import ensure_output_dirs, process_emails
 
 
@@ -12,9 +13,9 @@ def _load_emails(source: str, input_dir: Path, limit: int) -> list[ParsedEmail]:
             emails = fetch_recent_emails(limit=limit)
             if emails:
                 return emails
-            print("Outlook AppleScript n'a retourne aucun courriel.")
-        except OutlookAppleScriptError as exc:
-            print(f"Outlook AppleScript indisponible: {exc}")
+            print("Outlook local n'a retourne aucun courriel.")
+        except OutlookLocalError as exc:
+            print(f"Outlook local indisponible: {exc}")
 
         if source == "outlook":
             return []
