@@ -83,6 +83,31 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
+## Interface Streamlit
+
+Lancer l'interface locale:
+
+```bash
+streamlit run app.py
+```
+
+Puis ouvrir l'URL affichee par Streamlit, habituellement:
+
+```text
+http://localhost:8501
+```
+
+L'interface permet:
+
+- importer des fichiers `.txt`, `.eml`, `.msg` ou `.csv`;
+- essayer Outlook AppleScript localement;
+- revoir les courriels charges avant analyse;
+- generer `tasks.csv`;
+- generer des brouillons `.txt` a valider manuellement;
+- generer des fichiers `.ics` locaux si l'option est cochee.
+
+Elle ne contient aucun bouton d'envoi de courriel.
+
 Le mode par defaut est sans LLM:
 
 ```env
