@@ -117,11 +117,16 @@ http://localhost:8501
 L'interface permet:
 
 - importer des fichiers `.txt`, `.eml`, `.msg` ou `.csv`;
+- charger directement les fichiers presents dans `input_emails/`;
+- charger des courriels exemples pour verifier que l'interface fonctionne;
 - essayer Outlook localement;
 - revoir les courriels charges avant analyse;
+- afficher un tableau de synthese et filtrer les resultats apres analyse;
+- editer puis sauvegarder un brouillon local;
 - generer `tasks.csv`;
 - generer des brouillons `.txt` a valider manuellement;
 - generer des fichiers `.ics` locaux si l'option est cochee.
+- telecharger toutes les sorties dans un fichier `.zip`.
 
 Elle ne contient aucun bouton d'envoi de courriel.
 
@@ -168,6 +173,12 @@ Si Outlook ne retourne aucun message, le script affichera:
 Outlook local n'a retourne aucun courriel.
 Aucun courriel trouve...
 ```
+
+Dans l'interface Streamlit, c'est la raison la plus probable si aucun courriel n'apparait apres avoir clique sur `Lire Outlook localement`. Sur macOS, le nouvel Outlook peut repondre a AppleScript tout en exposant 0 message. Dans ce cas, utiliser plutot:
+
+- `Charger exemples` pour verifier le fonctionnement;
+- `Charger input_emails` apres avoir place des fichiers dans `input_emails/`;
+- l'import manuel `.txt`, `.eml`, `.msg` ou `.csv`.
 
 ## Tester avec fichiers locaux
 
